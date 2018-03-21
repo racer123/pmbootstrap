@@ -111,9 +111,13 @@ get_binaries()
 	if [ "${deviceinfo_msm_refresher}" == "true" ]; then
 		BINARIES="${BINARIES} /usr/sbin/msm-fb-refresher"
 	fi
-	if [ -f /usr/sbin/fbdebug ]; then
-		BINARIES="${BINARIES} /usr/sbin/fbdebug"
-	fi
+	for file in "/etc/postmarketos-mkinitfs/files"/*.files; do
+		[ -f "$file" ] || continue
+		while IFS= read -r line; do
+			[ -f "$line" ] || continue
+			BINARIES="${BINARIES} ${line}"
+		done < "$file"
+	done
 	lddtree -l $BINARIES | sort -u
 }
 
