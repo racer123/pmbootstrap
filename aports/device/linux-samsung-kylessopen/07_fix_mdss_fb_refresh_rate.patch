@@ -1,0 +1,17 @@
+diff --git a/drivers/video/msm/mdss/mdss_fb.c b/drivers/video/msm/mdss/mdss_fb.c
+index 53112ca6..4c430624 100644
+--- a/drivers/video/msm/msm_fb.c
++++ b/drivers/video/msm/msm_fb.c
+@@ -1261,7 +1261,7 @@ static int msm_fb_register(struct msm_fb_data_type *mfd)
+	mfd->var_xres = panel_info->xres;
+	mfd->var_yres = panel_info->yres;
+	mfd->var_frame_rate = panel_info->frame_rate;
+
+-	var->pixclock = mfd->panel_info.clk_rate;
++       var->pixclock = 1000000 / 60;
+	mfd->var_pixclock = var->pixclock;
+
+	var->xres = panel_info->xres;
+ 
+ 	/* id field for fb app  */
+ 
