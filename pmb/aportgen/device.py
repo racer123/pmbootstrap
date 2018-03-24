@@ -88,7 +88,7 @@ def ask_for_bootimg(args):
 
     while True:
         path = os.path.expanduser(pmb.helpers.cli.ask(args, "Path", None, "", False))
-        if not len(path):
+        if not path:
             return None
         try:
             return pmb.parse.bootimg(args, path)
@@ -132,12 +132,11 @@ def generate_deviceinfo(args, pkgname, name, manufacturer, arch, has_keyboard,
         deviceinfo_date=""
         deviceinfo_dtb=""
         deviceinfo_modules_initfs=""
-        deviceinfo_external_disk_install="false"
         deviceinfo_arch=\"""" + arch + """\"
 
         # Device related
         deviceinfo_keyboard=\"""" + ("true" if has_keyboard else "false") + """\"
-        deviceinfo_external_disk=\"""" + ("true" if has_external_storage else "false") + """\"
+        deviceinfo_external_storage=\"""" + ("true" if has_external_storage else "false") + """\"
         deviceinfo_screen_width="800"
         deviceinfo_screen_height="600"
         deviceinfo_dev_touchscreen=""

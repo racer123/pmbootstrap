@@ -143,13 +143,44 @@ def arguments_pkgrel_bump(subparser):
 
 
 def arguments_newapkbuild(subparser):
-    ret = subparser.add_parser("newapkbuild", help="get a template to package"
+    """
+    Wrapper for Alpine's "newapkbuild" command.
+
+    Most parameters will get directly passed through, and they are defined in
+    "pmb/config/__init__.py". That way they can be used here and when passing
+    them through in "pmb/helpers/frontend.py". The order of the parameters is
+    kept the same as in "newapkbuild -h".
+    """
+    sub = subparser.add_parser("newapkbuild", help="get a template to package"
                                " new software")
-    ret.add_argument("folder", help="aports subfolder, where the new aport will"
-                     " be located (main, cross, device, ...)")
-    ret.add_argument("args_passed", nargs=argparse.REMAINDER,
-                     help="arguments directly passed to Alpine's newapkbuild,"
-                     " more information: 'pmbootstrap newapkbuild main -h'")
+    sub.add_argument("--folder", help="set postmarketOS aports folder"
+                     " (default: main)", default="main")
+
+    # Passthrough: Strings (e.g. -d "my description")
+    for entry in pmb.config.newapkbuild_arguments_strings:
+        sub.add_argument(entry[0], dest=entry[1], help=entry[2])
+
+    # Passthrough: Package type switches (e.g. -C for CMake)
+    group = sub.add_mutually_exclusive_group()
+    for entry in pmb.config.newapkbuild_arguments_switches_pkgtypes:
+        group.add_argument(entry[0], dest=entry[1], help=entry[2],
+                           action="store_true")
+
+    # Passthrough: Other switches (e.g. -c for copying sample files)
+    for entry in pmb.config.newapkbuild_arguments_switches_other:
+        sub.add_argument(entry[0], dest=entry[1], help=entry[2],
+                         action="store_true")
+
+    # Force switch
+    sub.add_argument("-f", dest="force", action="store_true",
+                     help="force even if directory already exists")
+
+    # Passthrough: PKGNAME[-PKGVER] | SRCURL
+    sub.add_argument("pkgname_pkgver_srcurl",
+                     metavar="PKGNAME[-PKGVER] | SRCURL",
+                     help="set either the package name (optionally with the"
+                     " PKGVER at the end, e.g. 'hello-world-1.0') or the"
+                     " download link to the source archive")
 
 
 def arguments():
@@ -230,17 +261,21 @@ def arguments():
     zap.add_argument("--dry", action="store_true", help="instead of actually"
                      " deleting anything, print out what would have been"
                      " deleted")
-    zap.add_argument("-p", "--packages", action="store_true", help="also delete"
-                     " the precious, self-compiled packages")
     zap.add_argument("-hc", "--http", action="store_true", help="also delete http"
-                     "cache")
-    zap.add_argument("-m", "--mismatch-bins", action="store_true", help="also delete"
-                     " binary packages that are newer than the corresponding"
-                     " package in aports")
-    zap.add_argument("-o", "--old-bins", action="store_true", help="also delete outdated"
-                     " binary packages downloaded from mirrors (e.g. from Alpine)")
+                     " cache")
     zap.add_argument("-d", "--distfiles", action="store_true", help="also delete"
-                     " downloaded files cache")
+                     " downloaded source tarballs")
+    zap.add_argument("-p", "--pkgs-local", action="store_true",
+                     dest="pkgs_local",
+                     help="also delete *all* locally compiled packages")
+    zap.add_argument("-m", "--pkgs-local-mismatch", action="store_true",
+                     dest="pkgs_local_mismatch",
+                     help="also delete locally compiled packages without"
+                     " existing aport of same version")
+    zap.add_argument("-o", "--pkgs-online-mismatch", action="store_true",
+                     dest="pkgs_online_mismatch",
+                     help="also delete outdated packages from online mirrors"
+                     " (that have been downloaded to the apk cache)")
 
     # Action: stats
     stats = sub.add_parser("stats", help="show ccache stats")
@@ -261,6 +296,8 @@ def arguments():
     chroot = sub.add_parser("chroot", help="start shell in chroot")
     chroot.add_argument("--add", help="build/install comma separated list of"
                         " packages in the chroot before entering it")
+    chroot.add_argument("--user", help="run the command as user, not as root",
+                        action="store_true")
     chroot.add_argument("command", default=["sh"], help="command"
                         " to execute inside the chroot. default: sh", nargs='*')
     for action in [build_init, chroot]:
