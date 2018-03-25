@@ -80,7 +80,7 @@ package() {
 	echo "--[ Installing modules ]--"
 	cd "$builddir"
 	make ARCH="$_carch" CC="${CC:-gcc}" \
-		INSTALL_MOD_PATH="$pkgdir" KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS" modules_install		|| return 1
+		INSTALL_MOD_PATH="$pkgdir" KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS" modules_install
 }
 
 sha512sums="22c89caaae880c64fb1a9e25ff5c65813b4bfa9a27ca4310fe9da17c4a1bfff2b49b4516f48fd30a4ccb1a185fc525b0c5967b4f18bfd3c2f8cfce66c8a268bd  linux-samsung-kylessopen-d0e853abec2d7be79f5d9b319273a0b66046b125.tar.gz
